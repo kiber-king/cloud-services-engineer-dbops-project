@@ -10,7 +10,20 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    #### Добавьте шаг с Flyway-миграциями
+
+    - name: Install Flyway
+      run: |
+        curl -L -o flyway.tar.gz "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/11.1.0/flyway-commandline-11.1.0-linux-x64.tar.gz"
+        tar -xzf flyway.tar.gz
+        sudo ln -s $(pwd)/flyway-11.1.0/flyway /usr/local/bin/flyway
+
+    - name: Run Flyway migrations
+      env:
+        FLYWAY_URL: jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
+        FLYWAY_USER: ${{ secrets.DB_USER }}
+        FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        FLYWAY_LOCATIONS: filesystem:./migrations
+      run: flyway migrate
 
     ### Этот шаг оставьте без изменений
     - name: Download and setup autotests binaries
